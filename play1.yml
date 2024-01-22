@@ -1,0 +1,26 @@
+---
+- hosts: all
+  become: true
+  gather_facts: yes
+  ignore_errors: true
+  vars:
+    user_name: alix2024
+    group_name: devops
+  vars_files:
+    - variables.yml  
+  tasks:
+    - name: Check the time
+      command: date
+     # when: ansible_distribution == "alix" or ansible_processor_nproc == 2
+    - name: create user alix
+      user:
+         name: "{{ user_name }}"
+         comment: alix Admin
+    - name: create group
+      group:
+         name: "{{ security }}"
+         state: present
+    - name: Install package
+      package:
+        name: "{{ pkg_name }}"
+        state: present
