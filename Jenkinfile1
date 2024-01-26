@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    sh 'ansible-playbook deploy.yml'
+                }
+            }
+        }
+        
+        stage('Archive') {
+            steps {
+                script {
+                    sh 'zip -r code.zip .'
+                    archiveArtifacts 'code.zip'
+                }
+            }
+        }
+        
+        stage('Deploy to Nexus') {
+            steps {
+                script {
+                    def nexusUrl = "http://18.234.103.149:8081/repository/code/"
+                    def repositoryId = "code"
+                    def artifactPath = "code.zip"
+                    
+                    withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
+                        def nexusUploadCommand = "curl -v -u \"$NEXUS_USERNAME:$NEXUS_PASSWORD\" -X POST \"$nexusUrl/service/rest/v1/components?repository=$repositoryId\" -F \"raw.directory=$(dirname $artifactPath)\" -F \"raw.asset1=@$artifactPath\""
+                        sh nexusUploadCommand
+                    }
+                }
+            }
+        }
+        
+        stage('Deploy to Ansible Server') {
+            steps {
+                script {
+                    def ansibleServer = "ec2-50-19-175-13.compute-1.amazonaws.com"
+                    def ansibleUser = "ec2-user"
+                    def ansibleDestination = "/home/ec2-user/ansible-dev"
+                    def artifactPath = "code.zip"
+                    
+                    sh "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $artifactPath $ansibleUser@$ansibleServer:$ansibleDestination"
+                }
+            }
+        }
+    }
+}

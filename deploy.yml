@@ -1,0 +1,71 @@
+---
+- name: alexsmith-project
+  hosts: all
+  become: true
+  ignore_errors: true
+  tasks:
+    - name: Update the system
+      package:
+        name: '*'
+        state: latest
+      when: ansible_distribution == "Amazon" or ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"  
+
+    - name: Install packages
+      package:
+        name: "{{ 'httpd' if ansible_distribution == 'Amazon' else 'apache2' }}"
+        state: present
+      loop:
+        - curl
+        - finger
+        - wget
+        - unzip
+        - git
+      when: ansible_distribution == "Amazon" or ansible_distribution == "Ubuntu" or ansible_distribution == "Debian" 
+
+    - name: Download url
+      get_url: 
+        url: https://github.com/utrains/static-resume/archive/refs/heads/main.zip
+        dest: /var/www/html/
+        mode: '0777'
+
+
+    - name: change directory to the html directory
+      shell: cd /var/www/html
+
+
+    - name: unzip the zip folder
+      ansible.builtin.unarchive:
+        src: /var/www/html/static-resume-main.zip
+        dest: /var/www/html/
+        remote_src: yes
+
+
+    - name: copy webfiles from static resume
+      copy: 
+        src: /var/www/html/static-resume-main/
+        dest: /var/www/html/
+        remote_src: yes
+
+
+    - name: remove the resume directory
+      file: 
+        path: /var/www/html/static-resume-main
+        state: absent
+
+
+    - name: remove the static-resume-main.zip folder
+      file: 
+        path: /var/www/html/static-resume-main.zip
+        state: absent 
+
+    - name: start apache server, if not started
+      ansible.builtin.service:
+        enabled: yes
+        name: "{{ 'httpd' if ansible_distribution == 'Amazon' else 'apache2' }}"
+        state: started
+        
+  handlers:
+    - name: restart apache
+      systemd:
+        name: "{{ 'httpd' if ansible_distribution == 'Amazon' else 'apache2' }}"
+        state: restarted
