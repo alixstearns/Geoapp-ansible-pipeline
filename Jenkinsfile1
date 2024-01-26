@@ -2,10 +2,33 @@ pipeline {
     agent any
     
     stages {
-        stage('Build') {
+        stage('Stash Files') {
+            steps {
+                // Debugging output to list files in the workspace
+                sh 'ls -lR'
+                // Stash files in the Jenkins workspace
+                stash(name: 'myfiles', includes: '**/*', excludes: 'Jenkinsfile1')
+            }
+        }
+        
+        stage('Transfer Files to Ansible Agent') {
+            agent {
+                label 'ansible1' // Execute this stage on the "ansible" agent
+            }
+            steps {
+                // Unstash files on the "ansible" agent
+                unstash 'myfiles'
+                // Now you can use the transferred files on the agent
+            }
+        }
+        
+        stage('ansible play') {
+            agent {
+                label 'ansible1'
+            }
             steps {
                 script {
-                    sh 'ansible-playbook deploy.yml'
+                    sh 'ansible-playbook apache.yml'
                 }
             }
         }
@@ -33,18 +56,7 @@ pipeline {
                 }
             }
         }
-        
-        stage('Deploy to Ansible Server') {
-            steps {
-                script {
-                    def ansibleServer = "ec2-50-19-175-13.compute-1.amazonaws.com"
-                    def ansibleUser = "ec2-user"
-                    def ansibleDestination = "/home/ec2-user/ansible-dev"
-                    def artifactPath = "code.zip"
-                    
-                    sh "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $artifactPath $ansibleUser@$ansibleServer:$ansibleDestination"
-                }
-            }
-        }
     }
 }
+
+    

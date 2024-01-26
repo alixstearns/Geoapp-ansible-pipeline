@@ -13,5 +13,6 @@
          - finger
          - wget
          - httpd
-         - ntp 
+         - ntp
+         - java
          
