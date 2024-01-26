@@ -27,7 +27,7 @@ pipeline {
                     def artifactPath = "code.zip"
                     
                     withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
-                        def nexusUploadCommand = "curl -v -u \"$NEXUS_USERNAME:$NEXUS_PASSWORD\" -X POST \"$nexusUrl/service/rest/v1/components?repository=$repositoryId\" -F \"raw.directory=$(dirname $artifactPath)\" -F \"raw.asset1=@$artifactPath\""
+                        def nexusUploadCommand = "curl -v -u \"$username:$password\" -X POST \"$nexusUrl/service/rest/v1/components?repository=${repositoryId}\" -F \"raw.directory=$(dirname ${artifactPath})\" -F \"raw.asset1=@${artifactPath}\""
                         sh nexusUploadCommand
                     }
                 }
