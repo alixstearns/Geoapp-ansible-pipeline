@@ -1,4 +1,4 @@
-- hosts: all
+- hosts: ansible1
   gather_facts: no
   tasks:
     - name: Install Jenkins Job DSL Plugin
