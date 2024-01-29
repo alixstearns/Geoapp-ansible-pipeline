@@ -29,7 +29,7 @@ pipeline {
         
         stage('Run playbook') {
             agent {
-                label 'ansible'
+                label 'ansible1'
             }
             steps {
                 script {
