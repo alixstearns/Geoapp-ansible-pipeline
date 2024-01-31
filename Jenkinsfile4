@@ -6,7 +6,7 @@ pipeline {
             steps {
                 script {
                     // Create a zip file containing all files except Jenkinsfile
-                    sh 'zip -r ansible-codes.zip * -x Jenkinsfile4'
+                    sh 'zip -r code.zip * -x Jenkinsfile4'
                     
                     // Upload the zip file to JFrog Artifactory
                     sh 'curl -uadmin:AP8gqnnJFGjpmxzN9a1p4zdFjHe -T code.zip "http://44.212.72.5:8081/artifactory/code"'
