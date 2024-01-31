@@ -10,7 +10,7 @@
 
     - name: Display the output
       debug:
-        var: nproc_output.diff.after.path
+        var: nproc_output.stdout
 
     - name: create file
       file:
@@ -21,4 +21,4 @@
 
     - name: display output
       debug:
-        var: file_output
+        var: file_output.after.dest.path
