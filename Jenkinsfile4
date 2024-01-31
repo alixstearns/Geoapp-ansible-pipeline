@@ -36,7 +36,7 @@ pipeline {
                     // Unzip ansible-codes.zip
                     sh 'unzip -o code.zip'
                     // Run ansible-playbook from the correct directory
-                    dir('ansible-codes') {
+                    dir('code') {
                        sh 'ansible-playbook -i /home/ec2-user/ansible-dev/week17-ansible-code/inventory.yml /home/ec2-user/ansible-dev/week17-ansible-code/play1.yml'
                         
                         
