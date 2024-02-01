@@ -18,7 +18,7 @@
          comment: alix Admin
     - name: create group
       group:
-         name: "{{ security }}"
+         name: "{{ group_name }}"
          state: present
     - name: Install package
       package:

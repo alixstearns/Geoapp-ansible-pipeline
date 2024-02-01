@@ -1,50 +1,15 @@
-- hosts: db,ws,ansible1
-  gather_facts: no
+---
+- hosts: all
+  become: true
+  gather_facts: true
   tasks:
-    - name: Install Jenkins Job DSL Plugin
-      jenkins_plugin:
-        name: job-dsl
-        state: present
-
-    - name: Create Jenkins pipeline job
-      jenkins_job:
-        config: |
-          pipelineJob('cronjob-pipeline') {
-              triggers {
-                  cron('0 2 1 * *')
-              }
-              definition {
-                  cps {
-                      script('''
-                          pipeline {
-                              agent any
-                              stages {
-                                  stage('System Update') {
-                                      steps {
-                                          script {
-                                              // Run system update based on the OS type
-                                              if (isUnix()) {
-                                                  sh 'apt update -y'
-                                              } else {
-                                                  sh 'yum update -y'
-                                              }
-                                          }
-                                      }
-                                  }
-                                  stage('Execute Ansible Playbook') {
-                                      steps {
-                                          ansiblePlaybook(
-                                              playbook: '/home/ec2-user/ansible-dev/week17-ansible-code/cronjob.yml',
-                                              inventory: '/home/ec2-user/ansible-dev/week17-ansible-code/inventory.yml',
-                                              colorized: true,
-                                              ansibleName: 'ansible1'
-                                          )
-                                      }
-                                  }
-                              }
-                          }
-                      ''')
-                  }
-              }
-          }
-        state: present
+    - name: Add monthly cron job for package updates
+      ansible.builtin.cron:
+          name: "Monthly Package Updates"
+          minute: 0
+          hour: 0
+          day: 1
+          month: "*"
+          weekday: "*"
+          job: "yum update -y || apt update -y"
+      when: "ansible_os_family == 'RedHat' or ansible_distribution == 'Amazon' or ansible_os_family == 'Debian'"
